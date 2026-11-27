@@ -1,0 +1,48 @@
+name: Build & Auto Release wechatDownload
+run-name: Build and Release ${{ github.ref_name }}
+
+on:
+  push:
+    tags:
+      - 'v*' # 推送 v5.0 这类tag，自动触发打包+发布release
+  workflow_dispatch: # 支持手动在Actions页面一键触发打包发布
+
+permissions:
+  contents: write # ✅ 关键权限，没有这个无法创建Release
+
+jobs:
+  build-release:
+    runs-on: windows-latest
+    env:
+      ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20 LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Set npm mirror
+        run: |
+          npm config set registry shturl.cc/nc3vuqm9MwZAcOWUYdWB
+          npm config set electron_mirror https://npmmirror.com/mirrors/electron/
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Electron Windows package
+        run: npm run build
+
+      - name: Create Release & Upload EXE
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.exe
+          generate_release_notes: true # 自动生成release更新日志
+          draft: false # false=直接发布；true=创建草稿Release（推荐第一次测试改成true）
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
