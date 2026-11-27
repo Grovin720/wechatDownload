@@ -1,14 +1,13 @@
-name: Build & Auto Release wechatDownload
-run-name: Build and Release ${{ github.ref_name }}
+name: Build & Auto Release wechatDownload 5.0
+run-name: Build and Release from main branch
 
 on:
   push:
-    tags:
-      - 'v*' # 推送 v5.0 这类tag，自动触发打包+发布release
-  workflow_dispatch: # 支持手动在Actions页面一键触发打包发布
+    branches: [ main ] # main分支提交代码就触发打包发布
+  workflow_dispatch: # 手动点击触发打包发布
 
 permissions:
-  contents: write # ✅ 关键权限，没有这个无法创建Release
+  contents: write # 必须，用于创建Release
 
 jobs:
   build-release:
@@ -16,7 +15,7 @@ jobs:
     env:
       ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
     steps:
-      - name: Checkout source code
+      - name: Checkout source main branch
         uses: actions/checkout@v4
 
       - name: Setup Node.js 20 LTS
@@ -27,7 +26,7 @@ jobs:
 
       - name: Set npm mirror
         run: |
-          npm config set registry shturl.cc/nc3vuqm9MwZAcOWUYdWB
+          npm config set registry shturl.cc/TfWPPPUY2II2PC722OYS
           npm config set electron_mirror https://npmmirror.com/mirrors/electron/
 
       - name: Install dependencies
@@ -41,8 +40,8 @@ jobs:
         with:
           files: |
             dist/*.exe
-          generate_release_notes: true # 自动生成release更新日志
-          draft: false # false=直接发布；true=创建草稿Release（推荐第一次测试改成true）
+          generate_release_notes: true
+          draft: true # ✅ 测试阶段：草稿Release，不会公开。打包成功人工确认后再Publish
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
