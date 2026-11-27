@@ -3,11 +3,11 @@ run-name: Build and Release from main branch
 
 on:
   push:
-    branches: [ main ] # main分支提交代码就触发打包发布
-  workflow_dispatch: # 手动点击触发打包发布
+    branches: [ main ]
+  workflow_dispatch:
 
 permissions:
-  contents: write # 必须，用于创建Release
+  contents: write
 
 jobs:
   build-release:
@@ -18,15 +18,16 @@ jobs:
       - name: Checkout source main branch
         uses: actions/checkout@v4
 
+      # 修改点1：去掉cache，换更稳的setup-node写法
       - name: Setup Node.js 20 LTS
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          # 删掉 cache: 'npm'，Windows下容易引发报错
 
       - name: Set npm mirror
         run: |
-          npm config set registry shturl.cc/TfWPPPUY2II2PC722OYS
+          npm config set registry shturl.cc/3i03R9AUBswQzjMkbeBZ
           npm config set electron_mirror https://npmmirror.com/mirrors/electron/
 
       - name: Install dependencies
@@ -41,7 +42,7 @@ jobs:
           files: |
             dist/*.exe
           generate_release_notes: true
-          draft: true # ✅ 测试阶段：草稿Release，不会公开。打包成功人工确认后再Publish
+          draft: true
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
