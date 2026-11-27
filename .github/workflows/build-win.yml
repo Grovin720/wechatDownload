@@ -14,22 +14,17 @@ jobs:
     runs-on: windows-latest
     env:
       ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
+      NPM_CONFIG_REGISTRY: shturl.cc/lwtitO0HkRq64EYU7xlZ
     steps:
       - name: Checkout source main branch
         uses: actions/checkout@v4
 
-      # 修改点1：去掉cache，换更稳的setup-node写法
-      - name: Setup Node.js 20 LTS
+      - name: Setup Node.js 20.18.0
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          # 删掉 cache: 'npm'，Windows下容易引发报错
+          node-version: 20.18.0
 
-      - name: Set npm mirror
-        run: |
-          npm config set registry shturl.cc/3i03R9AUBswQzjMkbeBZ
-          npm config set electron_mirror https://npmmirror.com/mirrors/electron/
-
+      # 改用环境变量设置镜像，不再单独run执行npm config，规避powershell执行失败问题
       - name: Install dependencies
         run: npm ci
 
